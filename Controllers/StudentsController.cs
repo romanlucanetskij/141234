@@ -32,23 +32,28 @@ namespace PracticalTask5_RestApi.Controllers
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] Student student)
         {
-            await _repo.AddAsync(student);
-            return Ok(new { message = "Student added" });
+            var createdStudent = await _repo.AddAsync(student);
+            return CreatedAtAction(nameof(GetById), new { id = createdStudent.Id }, createdStudent);
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] Student student)
         {
+            if (student.Id != 0 && student.Id != id)
+            {
+                return BadRequest(new { message = "Id in URL and payload must match." });
+            }
+
             student.Id = id;
-            await _repo.UpdateAsync(student);
-            return Ok(new { message = "Student updated" });
+            var updated = await _repo.UpdateAsync(student);
+            return updated ? NoContent() : NotFound();
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            await _repo.DeleteAsync(id);
-            return Ok(new { message = "Student deleted" });
+            var deleted = await _repo.DeleteAsync(id);
+            return deleted ? NoContent() : NotFound();
         }
     }
 }
